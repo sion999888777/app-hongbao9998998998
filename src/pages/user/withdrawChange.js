@@ -1,0 +1,207 @@
+import React, { Component } from 'react'
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    Dimensions,
+    Alert
+} from 'react-native'
+import NavigationBar from '../../components/NavigationBar'
+import WidgetView from '../../common/headerLeft'
+import Button from '../../components/Button/index'
+import Loading from '../../common/loading/index'
+import SafeAreaViewPlus from '../../common/ios-private/SafeAreaViewPlus'
+
+const windowWidth = Dimensions.get('window').width;
+
+import { codeSix } from '../../configs/regular'
+import { modifyUserInfoSocket } from '../../request/api/socket'
+
+export default class WithdrawChangePage extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+        isFetching: false,  // 是否在请求接口
+        oldPassword: '',  // 旧密码
+        newPassword: '',   // 新密码
+        newPwdRepeat: '',
+        modifyToken: ""
+    }
+  }
+  componentDidMount() {
+    this.setState({
+      modifyToken: this.props.navigation.state.params.modifyToken ? this.props.navigation.state.params.modifyToken : null
+    })
+}
+  onBackFn = ()=> {
+    this.props.navigation.goBack()
+  } 
+  submitFn = ()=> {
+    const pwd = codeSix.test(this.state.newPassword)
+
+    if(this.state.oldPassword.replace(/\s+/g, "") === "") {
+    
+        Alert.alert(
+            '提示', 
+            '请输入原密码!',
+            [
+                {text: '确定', onPress: () => { console.warn('确定')}}
+            ]
+        )
+        return
+    }
+
+    if(this.state.newPwdRepeat !== this.state.newPassword) {
+    
+        Alert.alert(
+            '提示', 
+            '两次密码输入不一致!',
+            [
+                {text: '确定', onPress: () => { console.warn('确定')}}
+            ]
+        )
+        return
+    }
+
+    if (!pwd) {
+     
+        Alert.alert(
+            '提示', 
+            '密码必须为6位数字!',
+            [
+                {text: '确定', onPress: () => { console.warn('确定')}}
+            ]
+        )
+        return
+    }
+
+    let data = {
+        withdrawPassword: this.state.oldPassword,
+        newWithdrawPassword: this.state.newPassword,
+        modifyToken: this.state.modifyToken ? this.state.modifyToken : ""
+    }
+    this._changeWithdrawPwdFn(data)
+  }
+
+  _changeWithdrawPwdFn(data) {
+    this.setState({
+        isFetching: true
+    })
+
+    modifyUserInfoSocket(data) 
+    .then(res => {
+        this.setState({
+            isFetching: false
+        })
+        this.props.navigation.navigate("UserInfoPrivatePage")
+    })
+    .catch(err => {
+        this.setState({
+            isFetching: false
+        })
+        alert(JSON.stringify(err))
+    })
+}
+
+  render() {
+    let navigationBar = <NavigationBar
+        title = "修改提现密码"
+        statusBar={{
+            backgroundColor: '#212025'
+        }}
+        leftButton={WidgetView.getLeftButton(() => this.onBackFn())}
+    />
+    return (
+        <SafeAreaViewPlus  
+            topColor={'#212025'}
+            bottomInset={false}>
+         {navigationBar}
+          <View style={styles.itemWrap}>
+                <View style={[styles.flexStart, styles.list, {borderBottomWidth: 1, borderBottomColor: "#e9e9e9"}]}>
+                    <Text style={styles.title}>原密码</Text>
+                    <TextInput
+                        style={styles.value}
+                        placeholder = "请填写旧的提现密码"
+                        onChangeText={oldPassword => { this.setState({oldPassword}) }}
+                    />
+                </View>
+                <View style={[styles.flexStart, styles.list, {borderBottomWidth: 1, borderBottomColor: "#e9e9e9"}]}>
+                    <Text style={styles.title}>新密码</Text>
+                    <TextInput
+                        style={styles.value}
+                        // secureTextEntry
+                        placeholder = "请输入新的提现密码"
+                        onChangeText={newPassword => { this.setState({newPassword}) }}
+                    />
+                </View>
+                <View style={[styles.flexStart, styles.list]}>
+                    <Text style={styles.title}>再次确认</Text>
+                    <TextInput
+                        style={styles.value}
+                        // secureTextEntry
+                        placeholder = "请再次输入新的提现密码"
+                        onChangeText={newPwdRepeat => { this.setState({newPwdRepeat}) }}
+                    />
+                </View>
+          </View>
+          <Text style={styles.note}>密码必须是6位数字</Text>
+          <Button
+                enable={true}
+                textStyle={styles.textStyle}
+                text='确认修改'
+                buttonStyle={styles.buttonStyle}
+                onPress={this.submitFn}/>
+        <Loading isShow={this.state.isFetching}/>
+      </SafeAreaViewPlus>
+    )
+  }
+}
+
+const styles = StyleSheet.create({
+  flexStart: {
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+  },
+  borderTopAndBottom: {
+    borderTopWidth: 1,
+    borderTopColor: "#e1e0e5",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e1e0e5",
+  },
+  itemWrap: {
+    backgroundColor: "#fff",
+    paddingLeft: 15,
+    marginTop: 14
+  },
+  list: {
+      paddingRight: 15
+  },
+  title: {
+      fontSize: 15,
+      color: "#000000",
+      width: 85
+  },
+  value: {
+    fontSize: 15,
+    color: "#000000",
+  },
+  note: {
+    fontSize: 11,
+    color: "#525459",
+    marginLeft: 20,
+    marginTop: 8,
+    marginBottom: 20
+  },
+  buttonStyle: {
+    width: windowWidth - 30,
+    backgroundColor: "#a6cea5",
+    marginLeft: 15,
+    borderWidth: 1,
+    borderColor: "#70b06e"
+  },
+  textStyle: {
+    color: "#e8ede8"
+  }
+})

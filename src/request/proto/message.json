@@ -1,0 +1,66 @@
+{
+  "options": {
+    "java_package": "com.ag866.t1.api.websocket.base.pb",
+    "java_outer_classname": "Message",
+    "optimize_for": "LITE_RUNTIME"
+  },
+  "nested": {
+    "MsgType": {
+      "values": {
+        "SINGLE_TEXT": 0,
+        "SINGLE_AUDIO": 1,
+        "GROUP_TEXT": 2,
+        "GROUP_AUDIO": 3
+      }
+    },
+    "MsgData": {
+      "fields": {
+        "to": {
+          "type": "uint32",
+          "id": 1
+        },
+        "from": {
+          "type": "uint32",
+          "id": 2
+        },
+        "ctime": {
+          "type": "uint32",
+          "id": 3
+        },
+        "type": {
+          "type": "MsgType",
+          "id": 4
+        },
+        "data": {
+          "type": "string",
+          "id": 5
+        }
+      }
+    },
+    "MsgNotify": {
+      "fields": {
+        "seq": {
+          "type": "uint32",
+          "id": 1
+        }
+      }
+    },
+    "MsgSync": {
+      "fields": {
+        "seq": {
+          "type": "uint32",
+          "id": 1
+        }
+      }
+    },
+    "MsgSyncData": {
+      "fields": {
+        "messages": {
+          "rule": "repeated",
+          "type": "MsgData",
+          "id": 1
+        }
+      }
+    }
+  }
+}
